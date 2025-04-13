@@ -1,19 +1,25 @@
 package com.example.biblioteka;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,6 +29,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.firebase.auth.FirebaseAuth;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,11 +41,13 @@ public class MainActivity extends AppCompatActivity {
     private final int maxResults = 10;
     private boolean isLoading = false;
     private boolean hasMore = true;
+    private FirebaseAuth mAuth;
 
     private RequestQueue mRequestQueue;
     private ArrayList<BookInfo> bookInfoArrayList;
     private EditText searchEdt;
     private ImageButton searchBtn;
+    private boolean isAscendingOrder = true; // Флаг направления сортировки
 
     RecyclerView mRecyclerView;
 
@@ -47,10 +56,33 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mAuth = FirebaseAuth.getInstance();
+
+        // Добавить кнопку выхода
+        ImageButton btnLogout = findViewById(R.id.btnLogout);
+        btnLogout.setOnClickListener(v -> signOut());
+
         // initializing our views.
         searchEdt = findViewById(R.id.idEdtSearchBooks);
         searchBtn = findViewById(R.id.idBtnSearch);
         mRecyclerView = findViewById(R.id.idRVBooks);
+
+        Button sortAscBtn = findViewById(R.id.idBtnSortAsc);
+        Button sortDescBtn = findViewById(R.id.idBtnSortDesc);
+
+        sortAscBtn.setOnClickListener(v -> {
+            isAscendingOrder = true;
+            sortBooks();
+        });
+
+        sortDescBtn.setOnClickListener(v -> {
+            isAscendingOrder = false;
+            sortBooks();
+        });
+
+        findViewById(R.id.btnFavorites).setOnClickListener(v -> {
+            startActivity(new Intent(this, FavoritesActivity.class));
+        });
 
         // initializing on click listener for our button.
         searchBtn.setOnClickListener(new View.OnClickListener() {
@@ -85,8 +117,65 @@ public class MainActivity extends AppCompatActivity {
                         getBooksInfo(searchEdt.getText().toString());
                     }
                 }
+
+                if (!isLoading && hasMore) {
+                    String filter = searchEdt.getText().toString();
+                    String yearFilter = ((EditText) findViewById(R.id.idEdtFilterYear)).getText().toString();
+                    if (!filter.isEmpty() || !yearFilter.isEmpty()) {
+                        // Только если есть активный фильтр
+                        if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                                && firstVisibleItemPosition >= 0) {
+                            getBooksInfo(filter);
+                        }
+                    }
+                }
             }
         });
+    }
+
+    private void signOut() {
+        mAuth.signOut();
+        startActivity(new Intent(this, AuthActivity.class));
+        finish();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Проверка авторизации при каждом запуске
+        if (mAuth.getCurrentUser() == null) {
+            startActivity(new Intent(this, AuthActivity.class));
+            finish();
+        }
+    }
+
+    private void sortBooks() {
+        if (bookInfoArrayList == null || bookInfoArrayList.isEmpty()) return;
+
+        Collections.sort(bookInfoArrayList, (b1, b2) -> {
+            int year1 = parseFullDate(b1.getPublishedDate());
+            int year2 = parseFullDate(b2.getPublishedDate());
+
+            return isAscendingOrder ?
+                    Integer.compare(year1, year2) :
+                    Integer.compare(year2, year1);
+        });
+
+        updateAdapter();
+    }
+
+    private int parseFullDate(String date) {
+        try {
+            // Преобразуем различные форматы дат в числовое значение
+            String[] parts = date.split("-");
+            int year = parts.length > 0 ? Integer.parseInt(parts[0]) : 0;
+            int month = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+            int day = parts.length > 2 ? Integer.parseInt(parts[2]) : 0;
+
+            return year * 10000 + month * 100 + day; // ГГГГММДД
+        } catch (Exception e) {
+            return 0; // Для некорректных дат
+        }
     }
 
     private void updateAdapter() {
@@ -101,6 +190,18 @@ public class MainActivity extends AppCompatActivity {
                 mRecyclerView.setAdapter(adapter);
             } else {
                 mRecyclerView.getAdapter().notifyDataSetChanged();
+
+                // Используем DiffUtil для плавной анимации изменений
+                BookAdapter oldAdapter = (BookAdapter) mRecyclerView.getAdapter();
+                BookAdapter newAdapter = new BookAdapter(bookInfoArrayList, this);
+
+                DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new BookDiffCallback(
+                        oldAdapter.getBooks(),
+                        newAdapter.getBooks()
+                ));
+
+                diffResult.dispatchUpdatesTo(oldAdapter);
+                oldAdapter.updateBooks(newAdapter.getBooks());
             }
         });
     }
@@ -118,6 +219,18 @@ public class MainActivity extends AppCompatActivity {
     private void handleError(Exception e) {
         runOnUiThread(() ->
                 Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    // Вспомогательный метод для извлечения года
+    private int parseYearFromDate(String date) {
+        try {
+            if (date.length() >= 4) {
+                return Integer.parseInt(date.substring(0, 4));
+            }
+        } catch (NumberFormatException e) {
+            Log.e("YearFilter", "Invalid date format: " + date);
+        }
+        return Integer.MAX_VALUE; // Если дата некорректна - исключаем из результатов
     }
 
     private void getBooksInfo(String query) {
@@ -143,6 +256,10 @@ public class MainActivity extends AppCompatActivity {
         String url = "https://www.googleapis.com/books/v1/volumes?q=" + query
                 + "&startIndex=" + startIndex
                 + "&maxResults=" + maxResults;
+
+        // Получаем значение года из поля
+        String yearFilterStr = ((EditText) findViewById(R.id.idEdtFilterYear)).getText().toString();
+        int yearFilter = yearFilterStr.isEmpty() ? Integer.MAX_VALUE : Integer.parseInt(yearFilterStr);
 
         // below line we are  creating a new request queue.
         RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
@@ -199,6 +316,11 @@ public class MainActivity extends AppCompatActivity {
                         String subtitle = volumeObj.optString("subtitle", "");
                         String publisher = volumeObj.optString("publisher", "N/A");
                         String publishedDate = volumeObj.optString("publishedDate", "N/A");
+                        int bookYear = parseYearFromDate(publishedDate);
+
+                        // Фильтрация по году
+                        if (bookYear > yearFilter) continue;
+
                         String description = volumeObj.optString("description", "No Description");
                         int pageCount = volumeObj.optInt("pageCount", 0);
                         String previewLink = volumeObj.optString("previewLink", "");
@@ -210,6 +332,11 @@ public class MainActivity extends AppCompatActivity {
                                 previewLink, infoLink, buyLink
                         );
                         bookInfoArrayList.add(bookInfo);
+                    }
+
+                    // После загрузки данных сортируем их
+                    if (!bookInfoArrayList.isEmpty()) {
+                        sortBooks();
                     }
 
                     // Обновление RecyclerView вне цикла

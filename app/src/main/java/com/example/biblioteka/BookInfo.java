@@ -106,6 +106,11 @@ public class BookInfo {
         this.buyLink = buyLink;
     }
 
+    public String getUniqueId() {
+        // Генерация уникального ID на основе данных книги
+        return this.title + "_" + this.publishedDate;
+    }
+
     // creating a constructor class for our BookInfo
     public BookInfo(String title, String subtitle, ArrayList<String> authors, String publisher,
                     String publishedDate, String description, int pageCount, String thumbnail,

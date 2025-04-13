@@ -26,15 +26,49 @@
             <EditText
                 android:id="@+id/idEdtSearchBooks"
                 android:layout_width="0dp"
-                android:layout_height="68dp"
+                android:layout_height="match_parent"
                 android:layout_weight="4"
                 android:background="#FFFFFF"
                 android:paddingStart="35px" />
 
             <!--image button for our search button -->
+            <EditText
+                android:id="@+id/idEdtFilterYear"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="#FFFFFF"
+                android:hint="Год"
+                android:inputType="number"
+                android:paddingStart="8dp" />
+
+            <LinearLayout
+                android:id="@+id/vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="69dp"
+                android:orientation="vertical"
+                android:weightSum="5">
+
+                <Button
+                    android:id="@+id/idBtnSortAsc"
+                    android:layout_width="40dp"
+                    android:layout_height="34.5dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#E0E0E0"
+                    android:text="↑ Дата" />
+
+                <Button
+                    android:id="@+id/idBtnSortDesc"
+                    android:layout_width="41dp"
+                    android:layout_height="34.5dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#E0E0E0"
+                    android:text="↓ Дата" />
+            </LinearLayout>
+
             <ImageButton
                 android:id="@+id/idBtnSearch"
-                android:layout_width="3dp"
+                android:layout_width="65dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:backgroundTint="#00FFFFFF"
@@ -49,7 +83,35 @@
             android:id="@+id/idRVBooks"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/idLLsearch" />
+            android:layout_below="@id/idLLsearch"
+            android:layout_marginTop="29dp" >
+
+        </androidx.recyclerview.widget.RecyclerView>
+
+        <ImageButton
+            android:id="@+id/btnLogout"
+            android:layout_width="61dp"
+            android:layout_height="66dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="8dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/logout" />
+
+        <Button
+            android:id="@+id/btnFavorites"
+            android:layout_width="wrap_content"
+            android:layout_height="59dp"
+            android:layout_above="@+id/btnLogout"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="7dp"
+            android:text="Favorites" />
 
         <!--progressbar for displaying our loading indicator-->
 

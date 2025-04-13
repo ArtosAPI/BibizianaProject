@@ -1,10 +1,13 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.google.gms.google.services)
+
 }
 
 android {
     namespace = "com.example.biblioteka"
     compileSdk = 35
+
 
     defaultConfig {
         applicationId = "com.example.biblioteka"
@@ -12,6 +15,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,7 +42,13 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.volley)
+    implementation (libs.firebase.auth.v2231)
+    implementation (libs.play.services.auth)
+    implementation (libs.firebase.ui.auth)
+    implementation(libs.google.services)
     implementation (libs.picasso)
+    implementation(libs.firebase.firestore)
+    implementation(platform(libs.firebase.bom))
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
