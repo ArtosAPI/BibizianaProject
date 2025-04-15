@@ -1,6 +1,7 @@
 package com.example.biblioteka;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,24 +45,29 @@ public class FavoritesGridAdapter extends RecyclerView.Adapter<FavoritesGridAdap
                 .error(R.drawable.placeholder)
                 .into(holder.ivBookCover);
 
-        // Обработка клика
-        holder.itemView.setOnClickListener(v -> {
+        // Обработка клика на сердечко (удаление)
+        holder.ivFavorite.setOnClickListener(v -> {
             int adapterPosition = holder.getAdapterPosition();
             if (adapterPosition == RecyclerView.NO_POSITION) return;
 
-            // Удаление из Firestore
             FirebaseFirestore.getInstance()
                     .collection("favorites")
                     .document(book.getId())
                     .delete()
                     .addOnSuccessListener(aVoid -> {
-                        // Удаление из списка
                         favorites.remove(adapterPosition);
                         notifyItemRemoved(adapterPosition);
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(context, "Ошибка удаления: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
+        });
+
+        // Обработка клика
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, BookDetails.class);
+            intent.putExtra("title", book.getTitle());
+            intent.putExtra("subtitle", book.getSubtitle());
+            intent.putExtra("thumbnail", book.getThumbnail());
+            // Добавьте остальные поля при необходимости
+            context.startActivity(intent);
         });
     }
 
@@ -76,11 +82,13 @@ public class FavoritesGridAdapter extends RecyclerView.Adapter<FavoritesGridAdap
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView ivFavorite;
         ImageView ivBookCover;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             ivBookCover = itemView.findViewById(R.id.ivBookCover);
+            ivFavorite = itemView.findViewById(R.id.ivFavorite);
         }
     }
 }
