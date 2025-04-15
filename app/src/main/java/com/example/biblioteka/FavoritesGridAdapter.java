@@ -5,10 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -44,7 +46,22 @@ public class FavoritesGridAdapter extends RecyclerView.Adapter<FavoritesGridAdap
 
         // Обработка клика
         holder.itemView.setOnClickListener(v -> {
-            // Переход к деталям книги
+            int adapterPosition = holder.getAdapterPosition();
+            if (adapterPosition == RecyclerView.NO_POSITION) return;
+
+            // Удаление из Firestore
+            FirebaseFirestore.getInstance()
+                    .collection("favorites")
+                    .document(book.getId())
+                    .delete()
+                    .addOnSuccessListener(aVoid -> {
+                        // Удаление из списка
+                        favorites.remove(adapterPosition);
+                        notifyItemRemoved(adapterPosition);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(context, "Ошибка удаления: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
         });
     }
 

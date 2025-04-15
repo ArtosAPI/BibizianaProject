@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,8 +67,12 @@ public class FavoritesActivity extends AppCompatActivity {
                     progressBar.setVisibility(View.GONE);
 
                     if (task.isSuccessful()) {
-                        List<FavoriteBook> books = task.getResult()
-                                .toObjects(FavoriteBook.class);
+                        List<FavoriteBook> books = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            FavoriteBook book = document.toObject(FavoriteBook.class);
+                            book.setId(document.getId()); // Устанавливаем ID документа
+                            books.add(book);
+                        }
                         adapter.updateList(books);
                     } else {
                         Toast.makeText(this, "Ошибка загрузки", Toast.LENGTH_SHORT).show();

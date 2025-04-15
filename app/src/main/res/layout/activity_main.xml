@@ -29,6 +29,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="4"
                 android:background="#FFFFFF"
+                android:hint="Поиск"
                 android:paddingStart="35px" />
 
             <!--image button for our search button -->
