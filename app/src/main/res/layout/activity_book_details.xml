@@ -37,7 +37,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="4dp"
-                    android:text="Publisher"
+                    android:text="Издатель"
                     android:textColor="@color/black"
                     android:textSize="15sp" />
 
@@ -48,7 +48,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:padding="4dp"
-                    android:text="Number of Pages"
+                    android:text="Кол-во страниц"
                     android:textColor="@color/black"
                     android:textSize="15sp" />
 
@@ -59,7 +59,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:padding="4dp"
-                    android:text="Publish Date"
+                    android:text="Дата выпуска"
                     android:textColor="@color/black"
                     android:textSize="15sp" />
 
@@ -74,7 +74,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:padding="4dp"
-            android:text="title"
+            android:text="Название"
             android:textColor="@color/black"
             android:textSize="15sp" />
 
@@ -85,7 +85,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:padding="4dp"
-            android:text="subtitle"
+            android:text="Подзаголовок"
             android:textColor="@color/black"
             android:textSize="12sp" />
 
@@ -96,7 +96,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:padding="4dp"
-            android:text="description"
+            android:text="Описание"
             android:textColor="@color/black"
             android:textSize="12sp" />
 
@@ -114,7 +114,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
-                android:text="Preview"
+                android:text="Предосмотр"
                 android:textAllCaps="false" />
 
             <!--button for opening buying page of the book-->
@@ -124,7 +124,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
-                android:text="Buy"
+                android:text="Купить"
                 android:textAllCaps="false" />
 
         </LinearLayout>
